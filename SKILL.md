@@ -2,14 +2,14 @@
 name: qodercn-cli
 name_en: Qoder CLI CN Delegation
 name_zh: Qoder CN CLI 协同
-description: Delegate coding and repository work to the standalone Qoder CLI CN runtime (qodercn / qoderclicn), which keeps its own login and credit pool. Supports headless -p calls, the official qodercn-agent-sdk with can_use_tool permission callbacks, and ACP stdio orchestration. Use when the user mentions qodercn, qoderclicn, QoderCN, a second opinion or cross-check review from another agent, or asks to build, implement, debug, fix, refactor or review code through it. Do NOT use for one-line edits, reading a single file, or work needing no external install.
-description_en: Delegate coding and repository work to the standalone Qoder CLI CN runtime (qodercn / qoderclicn), which keeps its own login and credit pool. Supports headless -p calls, the official qodercn-agent-sdk with can_use_tool permission callbacks, and ACP stdio orchestration. Use when the user mentions qodercn, qoderclicn, QoderCN, a second opinion or cross-check review from another agent, or asks to build, implement, debug, fix, refactor or review code through it. Do NOT use for one-line edits, reading a single file, or work needing no external install.
-description_zh: 把编码与仓库类工作委派给独立安装的 Qoder CLI CN（qodercn / qoderclicn），它有自己的登录态和独立额度池。支持 headless -p 调用、官方 qodercn-agent-sdk（含 can_use_tool 授权回调）以及 ACP stdio 编排。当用户提到 qodercn、qoderclicn、QoderCN，或要求由另一个 agent 给出第二意见、交叉复审，或要求用它来开发、实现、调试、修复、重构、审查代码时使用。不适用于一行小改、读单个文件，或无需外部安装的任务。
+description: Delegate coding and repository work to the standalone Qoder CLI CN runtime (qodercn / qoderclicn), which keeps its own login and credit pool. Supports headless -p calls and the official qodercn-agent-sdk with can_use_tool permission callbacks. Use when the user mentions qodercn, qoderclicn, QoderCN, a second opinion or cross-check review from another agent, or asks to build, implement, debug, fix, refactor or review code through it. Do NOT use for one-line edits, reading a single file, or work needing no external install.
+description_en: Delegate coding and repository work to the standalone Qoder CLI CN runtime (qodercn / qoderclicn), which keeps its own login and credit pool. Supports headless -p calls and the official qodercn-agent-sdk with can_use_tool permission callbacks. Use when the user mentions qodercn, qoderclicn, QoderCN, a second opinion or cross-check review from another agent, or asks to build, implement, debug, fix, refactor or review code through it. Do NOT use for one-line edits, reading a single file, or work needing no external install.
+description_zh: 把编码与仓库类工作委派给独立安装的 Qoder CLI CN（qodercn / qoderclicn），它有自己的登录态和独立额度池。支持 headless -p 调用与官方 qodercn-agent-sdk（含 can_use_tool 授权回调）。当用户提到 qodercn、qoderclicn、QoderCN，或要求由另一个 agent 给出第二意见、交叉复审，或要求用它来开发、实现、调试、修复、重构、审查代码时使用。不适用于一行小改、读单个文件，或无需外部安装的任务。
 argument-hint: Describe the task and give the project path
 argument-hint-en: Describe the task and give the project path
 argument-hint-zh: 描述任务，并给出项目目录
 user-invocable: true
-version: 7.7.2
+version: 0.0.2
 ---
 
 # Qoder CN CLI 协同（Qoder CLI CN）
@@ -18,7 +18,7 @@ Qoder CLI CN 与 QwenWork 共用同一套 agent 引擎，但是**独立安装的
 `~/.qoder-cn`，独立登录态，**独立额度池**。这里的调用不计入 QwenWork 额度，
 大任务前先告知用户这一点。
 
-正文结论按证据来源分级，见文末「事实来源分层」：**只有 V 级是本机执行验证**，
+正文结论按证据来源分级，见 [EVIDENCE.md](assets/EVIDENCE.md)「事实来源分级」：**只有 V 级是本机执行验证**，
 D/C 级不得当作既成事实引用。
 
 ## 快速开始
@@ -38,8 +38,7 @@ QN="$HOME/.qwenworkcn/skills/qodercn-cli/assets/qcn.sh"
 # 目录不受信时非 default 模式会被静默降级 -> 无头下表现为"所有工具被拒"
 ```
 
-需要中途授权、改写工具参数或实时进度时，走 Agent SDK 的 `assets/ask_relay.py`
-（见「交互桥接」）；只有在无法安装 SDK 时才用 ACP 客户端。
+需要中途授权、改写工具参数或实时进度时，走 Agent SDK 的 `assets/ask_relay.py`（见「交互桥接」）。
 
 ## 第一步永远是清洗环境
 
@@ -61,8 +60,7 @@ sdk_invalid_args: ... Expected --print --input-format stream-json
 
 按名字精确删除，**绝不能用前缀正则**（早期版本用 `^(QODER|QODERCN|DWS)`，会静默毁掉用户的 PAT 认证和默认
 模型）。**名单的唯一权威是 `assets/qcn.sh` 里的 `is_pollution()`** 与三份 Python 清洗器的
-`POLLUTION_EXACT` / `POLLUTION_FAMILIES` —— 不要把名单抄进本节，抄一次就多一个会过期的副本（这条本身
-就是本轮之前踩过的重复源）。
+`POLLUTION_EXACT` / `POLLUTION_FAMILIES` —— 不要把名单抄进本节，抄一次就多一个会过期的副本。
 
 必须保留的同族合法变量：`QODERCN_PERSONAL_ACCESS_TOKEN`（**PAT 覆盖已保存登录**）、`QODERCN_MODEL`、
 `QODERCN_SUBAGENT_MODEL`、`QODERCN_PERMISSION_MODE`、`QODERCN_WORKING_DIR`、`QODERCN_SESSION_ID`、
@@ -99,17 +97,16 @@ saved login, so unset it or set a valid token
 无浏览器环境（`CI`、`BROWSER=www-browser`、`DEBIAN_FRONTEND=noninteractive`、
 `SSH_CONNECTION`、Linux 无 `DISPLAY`）会打印登录 URL 而不是尝试开浏览器。
 
-## 通道选择（三条可用 + 一条已评估未采纳）
+## 通道选择（两条可用 + 一条已评估未采纳）
 
 | 形态 | 我的往返次数 | 能否中途问人 | 适用 |
 |---|---|---|---|
 | `-p` headless | 1 | 不能，需确认的一律 auto-deny | 默认选择 |
 | Agent SDK | 1 | 能，`can_use_tool` | 需要授权、改参数、中断 |
-| ACP stdio | 脚本化 1；逐条转达则 N | 能，`session/request_permission` | 装不上 SDK 时 |
 
-**三者都必须自己清洗环境**，SDK 也不会替你隔离。
+**两者都必须自己清洗环境**，SDK 也不会替你隔离。
 
-**第四条通道：已评估、未采纳。** 官方 `cloud-agents` 版块（265 页）已给 Managed Mode 完整路径：网关
+**已评估、未采纳的通道（云端 Managed Mode）。** 官方 `cloud-agents` 版块（265 页）已给 Managed Mode 完整路径：网关
 `https://api.qoder.com.cn/api/v1/cloud`，纯 curl + SSE，自带连通性探针（`GET /agents?limit=1`），认证走
 `pt-` 前缀 PAT 换 SAT；吸引力在把长任务挪离本机。**但本机仍不可达**（2026-08-30 实测
 `api.qoder.com.cn`/`openapi.qoder.com.cn` 503、`api.qoder.cn` 000，`--remote` 仍 `exit 42`）→ 只升出处，不升可用性。
@@ -215,13 +212,13 @@ updated_permissions, decision_classification)` 与
   **不能**证明动过文件，必须查产物。
 - **`acceptEdits` 的目录内编辑根本不经回调**：同一 Write 任务落盘成功而回调调用计数为 0。想靠
   `ask_relay.py` 拦编辑，必须用 `default`/`plan` 档，`acceptEdits` 会把它短路掉。
-- **`--allowed-tools <tool>` 是单值**（详见下方「源码级已证」）：`'Read,Write'` 是一个
+- **`--allowed-tools <tool>` 是单值**（详见 [EVIDENCE.md](assets/EVIDENCE.md)「源码级已证」）：`'Read,Write'` 是一个
   token 而非两项，多工具需重复传参；且它是**限制不是授权**。
 - **Rewind 无头可用**，配方见 `assets/rewind_files.py`：`query(text, message_uuid=<自定>)` →
   `rewind_files(uuid, dry_run=True)` 预览 → 去 `dry_run` 应用。锚点必须自供（SDK 自动生成的不回传）；
   `insertions/deletions` 只在预览里有意义（应用后归零）；`session_store` 与 `enable_file_checkpointing`
   互斥。`rollback` 与此无关 —— 它是 CLI **版本**回退。
-- **跨进程 Rewind 成立**（`assets/xproc_rewind.py`，A/B 两个独立进程）：A 写入后退出，B 用
+- **跨进程 Rewind 成立**（A/B 两个独立进程实测）：A 写入后退出，B 用
   `resume=<session_id>` 连上，预览 `canRewind:true` + 正确路径，应用后磁盘退回旧内容。检查点是**磁盘
   状态** `~/.qoder-cn/file-history/<session-id>/<hash>@vN`，故进程退出不丢；但**不能加
   `--no-session-persistence`**（会话不落盘就没有可续的锚点）。**快照只覆盖 `Write`/`Edit` 产物**：
@@ -267,7 +264,7 @@ cd "$A" && nohup python ask_relay.py --cwd "$P" --prompt "<任务>"      --outbo
 - **盘符绝对路径形式的规则静默不匹配**。`Read(C:/Users/.../secret.txt)` 直接泄露，
   而相对形式拦住。**不要用 `C:\` 或 `C:/` 前缀写 deny 规则**，用相对形式并按结果复核。
   （只测了正斜杠形式。）
-- **`Bash(cmd:*)` 参数级规则确实有效**（推翻本技能早先的否定结论）。双臂实测：
+- **`Bash(cmd:*)` 参数级规则确实有效**（此前的否定结论已被推翻）。双臂实测：
   `permissions.allow: ["Bash(echo:*)"]` + `--permission-mode default` 下，命中规则的
   `echo` 落盘成功；不命中的 `git commit` 被拒，且 `git rev-list --count` 证明它确实没执行。
   早先的错误结论源于两个混淆变量：只读 shell 命令有独立自动放行通道，且 `default` 下
@@ -316,9 +313,8 @@ Max 0.563 / Plus 1.13 —— 24 倍差且**与档位顺序不一致**，别按"�
 脚本因此回读本次 run 日志里的原始 payload 补齐，末尾给一行 `VERDICT`。判"这模型还能不能用"用它，不用 `118` 表象。第三个读数入口是**桌面 GUI**（`C:/Program Files/Qoder/Qoder CN/Qoder CN.exe` 的用量页），与 CLI 同账号同后端、肉眼最快；
 但它给的刷新时刻与 API 的 `expiresAt` **不一致**，两侧原文与判据见 EVIDENCE.md 台账。
 
-我方成本（决定总开销的是这个）：长对话中**我一个回合约 0.39 QwenWork 积分**（上下文较短时约 0.19，随上下文
-增长上升），而 Qoder CN CLI 跑完整件事才 0.16 —— 单个往返已约为其负载的 2.4 倍，交互式会成倍放大贵的那一侧。
-做法：一次委派覆盖整个任务；大产出落盘、只回一行摘要 + 路径；`--max-turns` 就是预算（40 回合烧 44.8、
+宿主侧成本（决定总开销的是这个）：一次委派往返的宿主积分开销约为其负载本身的两倍以上，且随上下文增长而放大，
+交互式更会把贵的一侧成倍抬高。做法：一次委派覆盖整个任务；大产出落盘、只回一行摘要 + 路径；`--max-turns` 就是预算（40 回合烧 44.8、
 20 回合烧 34.5，都跑满才断且断在产物不完整处）；审计/批量校验按每项 1-2 回合估，宁拆多次小委派。
 
 ## 会话与项目作用域
@@ -373,7 +369,7 @@ cd "C:/项目路径" && "$QN" -r "<session_id>" -p "继续"
   环境启动子进程而失败。必须走包装脚本。
 - 配置目录 `~/.qoder-cn`（**不是** `~/.qoder`）；但项目目录两边都叫 `.qoder/`。
 - `-w` / `--add-dir` 要 Windows 路径，`/c/a/b` 会破坏 project keying；小心
-  `cygpath -w` 吐出 8.3 短名（`LEGEBR~1`）。
+  `cygpath -w` 吐出 8.3 短名（形如 `USER~1` 的前六字符 + `~1`，而非完整目录名）。
 - Windows 原生 `python` 读不了 `/tmp/...`（只有 MSYS 工具能），且默认编码 cp936：
   要传 Windows 路径并显式 `encoding='utf-8'`。
 - Bash 的 cwd 跨调用保留；在解包出的源码目录里跑 `pip`，其 `types.py` 会遮蔽标准库
@@ -409,92 +405,12 @@ cd "C:/项目路径" && "$QN" -r "<session_id>" -p "继续"
 
 ## 参考资料
 
-- ACP 线级细节与两处文档纠错：[ACP-PROTOCOL.md](assets/ACP-PROTOCOL.md)；配套客户端
-  `assets/acp_drive.py`（已被 SDK 取代，只在装不上 SDK 时用）
 - 文档查证映射表：[DOC-LOOKUP.md](assets/DOC-LOOKUP.md)
 - 版本历史、D/C 级明细、排错顺序、方法留档、本轮实测台账：[EVIDENCE.md](assets/EVIDENCE.md) —— 会过期，
   勿据此判断当前行为。**对外发布先照其中「交接并入与发布协议」执行**（"可以公开"≠"可以推送"，两次确认）。
 
-## 事实来源分层
+## 事实来源分级
 
-只有 **V** 可当既成事实引用。
+结论按证据等级（V 本机执行验证 / D 文档转述 / C 更新日志 / 源码级 / ? 开放问题 / 已证伪）分级，完整分级与逐条取证台账见 [EVIDENCE.md](assets/EVIDENCE.md)「事实来源分级」。
 
-### V — 本机执行验证
-- SDK 缺 `can_use_tool` → 工具静默失败；`message_uuid` 为 Rewind 唯一锚点；
-  `session_store` 与 `enable_file_checkpointing` 互斥。桥接 allow 分支已实证。
-- `Bash(cmd:*)` allow 规则有效（双臂 + 提交计数对照）；`--allowed-tools` 不构成授权。
-- **UltraCode 两条入口都真实，且判据不是 credits**：关键词 `ultracode` 注入单轮 `workflow_keyword_request`，
-  实测该臂真的调了 `Workflow` 工具（其余臂 0 次）；常驻档 = 顶层设置 `ultracode:true` 且**不传**
-  `--reasoning-effort`，此时 `reasoningEffort` 自动升到 `xhigh`（不传又不设的基线是 `null`）—— 这个
-  `null→xhigh` 才是可数锚。**别拿"有没有起 Workflow"当常驻档判据**：常驻提醒原文写着
-  "Use the Workflow tool on every substantive task … **Solo only on conversational/trivial turns**"，
-  起不起由模型裁量。但**在真实编码任务上它也不起**：一个 14 回合、动到 Bash/Read/Grep/Write/Edit
-  的委派（常驻档开着、`effort=xhigh`）实测 `Workflow` 仍 0 次 —— headless 下常驻档的净效果目前只确证到
-  "抬 effort"，编排仍要靠关键词单轮触发。
-- 环境清洗是三通道共同前提；`sdk_invalid_args` 与 `Control request timeout: initialize`
-  的因果均已复现并反证。
-- 权限：`permissions.deny` 相对路径形式生效（`Edit(x)`、`Read(x)`）；**盘符绝对路径形式
-  静默不匹配**；`--allowed-tools` 压不过 deny；`permission_denials` 不记录规则命中。
-- CWD 即受信目录：未列入 `trustDirectories` 的工作目录中 `accept_edits` 写文件次次生效；非受信则非 default 模式强制降回 `default`，无头下表现为全部被拒。
-- `rollback` = **CLI 版本回退**（`--to <version>`），不是撤销文件改动。
-- **`--reasoning-effort` 的取值确实不校验，但 `ultracode` 是被特判的魔法值**：`zzz` 同样被接受，所以
-  「被解析器接受」仍不等于「该特性存在」；然而 bundle 里存在对 `reasoningEffort` 字面量
-  `ultracode` 的一行真特判，实测 `--reasoning-effort ultracode` 会让转写里的 `reasoningEffort` 落地成
-  **xhigh** 并开启常驻档。判取值有没有被特判，看落地值，不看是否报错。
-- `QODERCN_MEMORY=1` 下无头委派**未产生任何记忆目录/文件**，与"仅交互式会话生效"一致
-  → 无头路径不要指望自动记忆。
-- `modelUsage` 键为内部计费桶 ID（映射见「模型与计费」）。
-- **`118` 按模型分布而非按命令**：同一时刻 `-m Auto` 与 `gfmodel` 三次全挂、三个 Qwen 模型三次全成功；
-  读 `usage_info.py` 后可给出因果：计划池 300 已用满，Qwen 模型改扣专属日包，故只有它活着。
-- **跨进程 Rewind 成立**；**`--add-dir` 扩边界成立**；**`acceptEdits` 目录内编辑不调 `can_use_tool`**。
-- **`total_credits` 不能当特性探针**：同一 trivial prompt、`turns=1`、同模型的五次实测落在
-  0.048 / 0.049 / 0.051 / 0.075 / **0.571** —— 12 倍抖动。因此"某特性让 credits 涨了"是**弱证据**
-  （本技能早先据 0.456→1.041 判 UltraCode 就属于这类，现降为辅助证据）。要判特性是否生效，用**可数**
-  观测点：`num_turns`、子代理/工具计数、磁盘产物、回复里的元叙述（关键词臂的回复主动说
-  "trivial…rather than spin up a workflow"，这才是命中锚）。
-- **`--remote` 不可达与 exit 42 的根因：不是网络、不是账号权益，是版本错配**。可用性探测打
-  `GET /api/v4/service/region/endpoints`，该路径在服务端**恒 404**，而同进程同 IP 的 `v3` 同路径拿
-  **200**；attempts 明细 `failurePhase:"http_status"`、`requestCommitted:true` —— 请求完整走完并收到
-  响应，网络阶段排除。`/api/v1/remote/*` 从未被调用，故账号有无云端权益本机无从判定。终态
-  `exit_code=42 reason="unknown"`，文案却是"check your network connection" —— **归因错配，看到这句
-  别去查网线**（官方码表 42=输入/参数无效，`--remote` 借用该通用桶）。headless 持续 404 有 v3 兜底、不致命。
-- **倍率 ≠ 币种**：Qoder CLI CN 的每日赠送是 **Qwen 专属包**，而 `/usage` 用量面板**只有交互模式有**，
-  无头查不到某模型扣哪个池。本轮把推断收紧一步：非 Qwen（`gfmodel`）与 `Auto` 全部走空池（`118`）、
-  Qwen 五款全部可用 —— "当前能用的"与"专属日额覆盖的"重合，但这是**反证不是直读**，仍待 `/usage` 分项。
-- 三份清洗器逐名 `source` 复验，黑名单误删为 0。
-
-### D / C — 转述级（不可当事实用）
-明细移到 [EVIDENCE.md](assets/EVIDENCE.md)。**D** = 文档原文可引但未执行；
-**C** = 仅见于更新日志。引用前现查或实测升级为 V。
-
-### 源码级已证（grep 自身 bundle `qoderclicn-1.1.37.exe`；只录结论与标识符，混淆代码原文不录）
-- **2026-08-30 在 1.1.37 上复验：四条全部在位**，唯一显著变化 `additionalDirectories` 42 → 76（并集结论不变）；明细计数见 EVIDENCE.md「台账补充：2026-08-30」。
-- **常驻档读的是顶层键，不是 `advanced.`**：构造 config 那一段里 `bugCommand` 走 `advanced.` 嵌套读法、
-  `ultracode` 走顶层读法，两者并列 —— 所以设置文件里写顶层
-  `ultracode: true`；本技能先前由 `category:"Advanced"` 推断出的 `advanced.ultracode` **已被实测推翻**
-  （那一臂毫无反应）。另确认常驻档仅在非 ACP 通道判定；**关键抑制项是显式 effort 覆盖**：显式传任何
-  非 `ultracode` 的 `--reasoning-effort`（哪怕 `xhigh`）都会把常驻档关掉 —— 我最初四臂就是这么自己把
-  自己的实验掐死的。要常驻就别同时传 effort，或者直接 `--reasoning-effort ultracode`。
-- **`reasoningEffort` 的枚举是 `none|low|medium|high|xhigh|max`**（阈值 1024/8192/24576/49152），
-  字面量 `ultracode` **不在枚举里、却被单独特判**成常驻档开关并把落地值改成 `xhigh`。所以
-  "取值被解析器接受"依然不能当存在性证据（`zzz` 同样被接受），但反过来"不在枚举里"也不能判它无效 ——
-  两头都得看落地值。本技能先前把这两条当成互证，是错的。
-- **目录信任**：`trustDirectories` 与 `additionalDirectories` 在判定函数里**取并集，无优先级之争**；精确命中
-  →`TRUST_FOLDER`，命中父目录→`TRUST_PARENT`，另有 `isInheritedTrustFromIde`（IDE 也能授予信任）。
-  `trustDirectories` 有意只写用户级，注释明说"不被项目级覆盖"。
-- **MCP 懒加载**：常量 `["mcp_list","mcp_get","mcp_call"]`；启用式 = 环境变量 `QODER_MCP_LAZY=1` 或
-  设置项 `mcp.lazyLoad`，**环境变量压过设置**；`mcp_list` 列 `mcp__<server>__<tool>`、`mcp_get(toolName)`
-  取 schema、`mcp_call` 执行；传 `--allowed-mcp-server-names` 会使 `mcp.excluded` 失效。
-
-### ? — 开放问题（2026-08-29 晚单测收窄；深夜官方手册复核后仅剩产品侧两项）
-1. **三旗标已单测且官方有档**（cli-reference「远程与协作」+ cloud-mode/remote-control 页）：`--remote [task]` 官方语义=云端 VM 建会话并流式回传，需登录+GitHub 授权+`/remote-env` 选默认环境（写入 `remote.defaultCloudEnvironmentId`），本机仍 rc=42（可用性探测路径 404）；`--teleport <id>`/`--remote-session <id>` 已抵达服务端 Remote session API 并收应用级 400 `InvalidSessionID`（带 request_id）——**加载 API 已上线**，缺的只是真实云端会话；`--remote-control <id>` 为无头 worker（官方），子命令 `remote-control` 是守护进程（`--spawn same-dir|worktree`、`--capacity 32`）。
-2. **MCP 命名两侧独立实现**：CLI bundle 零 `qwenwork*` 字样、常量 `["mcp_list","mcp_get","mcp_call"]`；`qwenwork_mcp_tool_list/get/call` 只在 QwenWork 宿主 app.asar（17/18/22 处）——同构是同引擎表象、非互引；官方 `mcp.lazyLoad` 明说"暴露 meta 工具"，与 bundle 三常量互证；"有意对齐 QwenWork"仍待产品侧。
-
-### 已证伪，勿再用
-`!**`、`WebFetch(domain:...)` 规则写法在 CN 文档中仍不存在（国际版/OpenClaw 残留）；
-`QODERCLI_PATH` 不在 **settings-reference** 变量表（Python SDK 官方名 `cli_path`），但 SDK 排障页
-`cli_sdk_troubleshooting.md:19` 有载 —— 勿再说"完全未文档化"；`QODER_PAT`/`QODER_SAT` 不是 CLI/SDK 变量
-（官方是 `QODERCN_PERSONAL_ACCESS_TOKEN`），但**云端侧它们确为官方写法**，勿当整体不存在；
-`hooks list` 不存在（`hooks` 仅 `migrate`，实测）；`rollback` 不是文件撤销机制（`/rewind` 才是）。
-**2026-08-29 深夜撤出**：`~/path` 规则写法 —— 官方 permissions.md 明文记载 `~/Documents/**`（home 相对）与 `//`（根绝对），此前"CN 文档不存在"所依据的页面集已过时。
-
+**只有 V 级可当既成事实引用**；D/C 级引用前先按「官方文档查证入口」现查，或实测升级为 V。
