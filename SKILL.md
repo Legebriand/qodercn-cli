@@ -9,7 +9,7 @@ argument-hint: Describe the task and give the project path
 argument-hint-en: Describe the task and give the project path
 argument-hint-zh: 描述任务，并给出项目目录
 user-invocable: true
-version: 0.0.2
+version: 0.0.3
 ---
 
 # Qoder CN CLI 协同（Qoder CLI CN）
@@ -59,14 +59,14 @@ sdk_invalid_args: ... Expected --print --input-format stream-json
 ### 删什么、留什么
 
 按名字精确删除，**绝不能用前缀正则**（早期版本用 `^(QODER|QODERCN|DWS)`，会静默毁掉用户的 PAT 认证和默认
-模型）。**名单的唯一权威是 `assets/qcn.sh` 里的 `is_pollution()`** 与三份 Python 清洗器的
-`POLLUTION_EXACT` / `POLLUTION_FAMILIES` —— 不要把名单抄进本节，抄一次就多一个会过期的副本。
+模型）。**名单的唯一权威是 `assets/qcn.sh` 里的 `is_pollution()`** 与 `assets/sdk_bridge.py` 的
+`POLLUTION_EXACT` / `POLLUTION_FAMILIES`（其余 Python 脚本一律 `import sdk_bridge` 共用它，不存在第二份名单） —— 不要把名单抄进本节，抄一次就多一个会过期的副本。
 
 必须保留的同族合法变量：`QODERCN_PERSONAL_ACCESS_TOKEN`（**PAT 覆盖已保存登录**）、`QODERCN_MODEL`、
 `QODERCN_SUBAGENT_MODEL`、`QODERCN_PERMISSION_MODE`、`QODERCN_WORKING_DIR`、`QODERCN_SESSION_ID`、
 `QODERCN_SESSION_NAME`、`QODERCN_APPEND_SYSTEM_PROMPT`、`QODERCN_MEMORY*`、`QODERCN_SANDBOX*`、
 `QODER_MCP_LAZY`、`QODER_ASR_URL`、`QODER_CLI_MAX_CONCURRENT_SUBAGENTS`、`QODERCLI_PATH`（撞上
-`QODERCLI_*` 前缀却是用户指定运行时的入口，三份清洗器都留了显式白名单），以及文档化特性开关
+`QODERCLI_*` 前缀却是用户指定运行时的入口，两处名单都留了显式白名单），以及文档化特性开关
 （如 `QODERCN_FEATURE_CROSS_SESSION`）—— **特性开关按精确名删，不按 `QODER_FEATURE_*` 家族删**。
 `QODER_FEATURE_TASKS` 既被 QwenWork 注入又是文档变量，无法凭名字区分，按"隔离宿主优先"处理为删除。
 
@@ -171,8 +171,7 @@ python "$HOME/.qwenworkcn/skills/qodercn-cli/assets/sdk_bridge.py" \
 
 1. **`auth` 必填**，且不会隐式读 `~/.qoder-cn/.auth`，否则
    `AuthNotConfiguredError`。用 `qodercli_auth()`，其 payload 为
-   `{"type":"qodercli"}`，含义是"复用现有 CLI 登录"（与 ACP 广播的
-   `authMethods:[{id:"qoderclicn-login"}]` 对应）。另有 `access_token*()`、`service_account*()`
+   `{"type":"qodercli"}`，含义是"复用现有 CLI 登录"。另有 `access_token*()`、`service_account*()`
    （回调位真名 `fetch_service_account_token`；authentication.md 查无 `job_token` 待核）与 `on_auth_expired`。SDK 通过
    `mkdtemp(prefix="qoder-sdk-auth-")/payload.json`（0600）+
    `QODER_SDK_AUTH_PAYLOAD_FILE` 传递 —— 与 QwenWork 自身的做法逐字节同源，
@@ -242,8 +241,7 @@ cd "$A" && nohup python ask_relay.py --cwd "$P" --prompt "<任务>"      --outbo
 ```
 
 已实证：`Write`、`Read` 两次请求均正确浮出，答复 `1: allow` 后目标文件真实生成。
-`--on-timeout deny` 保证没人答就绝不放行，可当默认档；`allow_always` 对应 ACP 的
-`proceed_always`，此后同会话不再提问。
+`--on-timeout deny` 保证没人答就绝不放行，可当默认档；`allow_always`（对应交互协议里 `proceed_always` 的语义）此后同会话不再提问。
 
 ## 权限系统实测结论
 
@@ -285,7 +283,7 @@ CWD 即受信目录、`--add-dir` 能授予目录外写权限。
 ## 模型与计费
 
 模型名**不要猜**，先 `"$QN" --list-models`（1.1.37 实测 13 款，含 DeepSeek-V4/GLM-5.3/Kimi-K2.7-Code；名称大小写
-敏感，与文档 `cli_models.md` 冲突时以实时输出为准）。`-m` 语义：默认与新模型用**显示名**、Custom 用 modelID；问某名字背后是什么会得到策略性拒答。
+敏感，与文档 `cli/models.md` 冲突时以实时输出为准）。`-m` 语义：默认与新模型用**显示名**、Custom 用 modelID；问某名字背后是什么会得到策略性拒答。
 
 计费桶 ID ↔ 显示名（逐名实测）：`qfmodel`=Qwen3.8-Flash、`q37fmodel`=Qwen3.7-Flash、`qmodel`=Qwen3.7-Plus、
 `qmodel_38max`=Qwen3.8-Max；`gfmodel`=GLM-5.3-Flash 属**本机推断**（553 页文档站 0 命中 `gfmodel`/`GLM-5.3`，
@@ -340,7 +338,7 @@ cd "C:/项目路径" && "$QN" -r "<session_id>" -p "继续"
   **`<project>/.qoder/agents/`**，而 `.agents/`、`.agents/agents/`、`.qoder-cn/agents/` 全部**未被识别**。
   CLI 子代理存放位置文档整体未记载（553 页 0 命中 `<project>/agents/`），此条纯本机实测；frontmatter 用 `name`/`description`/`tools`。
 - 内置 5 个子代理：`Explore`、`general-purpose`、`Plan`、`qoder-guide`、
-  `statusline-setup`；用 `qodercn agents list` 查看。
+  `statusline-setup`；用 `"$QN" agents list` 查看。
 
 ## 子命令
 

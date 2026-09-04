@@ -12,7 +12,7 @@ CN 规则词汇 `Bash(npm run test:*)`、`Agent(general-purpose)`、会话内 `/
 `/loop [interval] <prompt>`；SDK `QoderCliProcessError`；`mcp add/list/remove` 语法。
 
 ### C — 仅见于更新日志（**2026-08-30 全站对账后四项已升 D**）
-更新日志本身就是文档站正式页面 `product-overview_qoder-cn-cli.md`，下面四项均有行号可引，"当前文档页查无"
+更新日志本身就是文档站正式页面 `product-overview/qoder-cn-cli.md`，下面四项均有行号可引，"当前文档页查无"
 的说法作废：子代理默认 150 轮（:468）；技能远端 HTTPS 安装与 `-s/--scope`（:660）；插件
 `PLUGIN_ROOT`/`PLUGIN_DATA`（:1682）；`mcp auth` 子命令（:22）。
 （UltraCode 的常驻形式已在本轮升级为源码级证据：设置项是**顶层** `ultracode`，嵌套的
@@ -146,16 +146,16 @@ CN 文档里出现的规则形式是 `Bash(npm run test:*)`、`Bash(npm publish:
 ---
 
 ### 待下轮收的缺漏（文档有、技能缺，价值最高五条）
-1. `--worktree <name>` 独立 Git 工作树跑并发委派（`cli_parallel-tasks.md:15-27`），落在
+1. `--worktree <name>` 独立 Git 工作树跑并发委派（`cli/parallel-tasks.md:15-27`），落在
    `<repo>/.qoder/worktrees/<名>`，`.worktreeinclude` 带未跟踪文件；技能完全没写。
-2. `get_context_usage()` 零回合读上下文实况（`cli_sdk_cost-usage.md:18`）：分类估算、自动压缩状态、
+2. `get_context_usage()` 零回合读上下文实况（`cli/sdk/cost-usage.md:18`）：分类估算、自动压缩状态、
    重复文件读取、每个 skill 占比 —— 与 `usage_info.py` 互补，一个读额度一个读上下文。
 3. SDK 入向插话 `priority="now"/"later"/"next"` + `should_query=False` + `interrupt()`
-   （`cli_sdk_multi-turn-conversation.md:113-121`）；带 `message_uuid` 才能 `cancel_async_message` 撤回。
+   （`cli/sdk/multi-turn-conversation.md:113-121`）；带 `message_uuid` 才能 `cancel_async_message` 撤回。
 4. 工作流落盘 `.qoder/workflows/*.js`（项目级压过插件级与内置），脚本无 shell/fs/网络权限、副作用全走子 Agent
-   （`cli_workflows.md:100-155`）。
+   （`cli/workflows.md:100-155`）。
 5. 云端 Session 状态机：向 `processing` 发消息 `409`、cancel 对 `idle` 是空操作、只有 `archived` 是终态、
-   `usage.total_credits` 是累计快照要按 id 覆盖（`cloud-agents_sessions.md:287,313,329`）。
+   `usage.total_credits` 是累计快照要按 id 覆盖（`cloud-agents/sessions.md:287,313,329`）。
 
 ---
 
@@ -205,7 +205,7 @@ SKILL.md 结论按下列等级分级，只有 **V** 可当既成事实引用；�
 - **倍率 ≠ 币种**：Qoder CLI CN 的每日赠送是 **Qwen 专属包**，而 `/usage` 用量面板**只有交互模式有**，
   无头查不到某模型扣哪个池。本轮把推断收紧一步：非 Qwen（`gfmodel`）与 `Auto` 全部走空池（`118`）、
   Qwen 五款全部可用 —— "当前能用的"与"专属日额覆盖的"重合，但这是**反证不是直读**，仍待 `/usage` 分项。
-- 三份清洗器逐名 `source` 复验，黑名单误删为 0。
+- 清洗名单（`qcn.sh` + `sdk_bridge.py`）逐名 `source` 复验，黑名单误删为 0。
 
 ### D / C — 转述级（不可当事实用）
 完整明细见本文件顶部「证据分层：D / C 级明细」。**D** = 文档原文可引但未执行；
@@ -237,7 +237,7 @@ SKILL.md 结论按下列等级分级，只有 **V** 可当既成事实引用；�
 ### 已证伪，勿再用
 `!**`、`WebFetch(domain:...)` 规则写法在 CN 文档中仍不存在（国际版/OpenClaw 残留）；
 `QODERCLI_PATH` 不在 **settings-reference** 变量表（Python SDK 官方名 `cli_path`），但 SDK 排障页
-`cli_sdk_troubleshooting.md:19` 有载 —— 勿再说"完全未文档化"；`QODER_PAT`/`QODER_SAT` 不是 CLI/SDK 变量
+`cli/sdk/troubleshooting.md:19` 有载 —— 勿再说"完全未文档化"；`QODER_PAT`/`QODER_SAT` 不是 CLI/SDK 变量
 （官方是 `QODERCN_PERSONAL_ACCESS_TOKEN`），但**云端侧它们确为官方写法**，勿当整体不存在；
 `hooks list` 不存在（`hooks` 仅 `migrate`，实测）；`rollback` 不是文件撤销机制（`/rewind` 才是）。
 **2026-08-29 深夜撤出**：`~/path` 规则写法 —— 官方 permissions.md 明文记载 `~/Documents/**`（home 相对）与 `//`（根绝对），此前"CN 文档不存在"所依据的页面集已过时。
