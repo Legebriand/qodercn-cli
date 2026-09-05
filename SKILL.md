@@ -9,7 +9,7 @@ argument-hint: Describe the task and give the project path
 argument-hint-en: Describe the task and give the project path
 argument-hint-zh: 描述任务，并给出项目目录
 user-invocable: true
-version: 0.0.3
+version: 0.0.4
 ---
 
 # Qoder CN CLI 协同（Qoder CLI CN）
@@ -99,7 +99,7 @@ saved login, so unset it or set a valid token
 
 ## 通道选择（两条可用 + 一条已评估未采纳）
 
-| 形态 | 我的往返次数 | 能否中途问人 | 适用 |
+| 形态 | 宿主往返次数 | 能否中途问人 | 适用 |
 |---|---|---|---|
 | `-p` headless | 1 | 不能，需确认的一律 auto-deny | 默认选择 |
 | Agent SDK | 1 | 能，`can_use_tool` | 需要授权、改参数、中断 |
@@ -108,8 +108,7 @@ saved login, so unset it or set a valid token
 
 **已评估、未采纳的通道（云端 Managed Mode）。** 官方 `cloud-agents` 版块（265 页）已给 Managed Mode 完整路径：网关
 `https://api.qoder.com.cn/api/v1/cloud`，纯 curl + SSE，自带连通性探针（`GET /agents?limit=1`），认证走
-`pt-` 前缀 PAT 换 SAT；吸引力在把长任务挪离本机。**但本机仍不可达**（2026-08-30 实测
-`api.qoder.com.cn`/`openapi.qoder.com.cn` 503、`api.qoder.cn` 000，`--remote` 仍 `exit 42`）→ 只升出处，不升可用性。
+`pt-` 前缀 PAT 换 SAT；吸引力在把长任务挪离本机。**但本机仍不可达**（连通性实测记录见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」）→ 只升出处，不升可用性。
 
 ### -p headless
 
@@ -127,11 +126,8 @@ headless 下没人能回答确认，所以要用 `--permission-mode` 预授权�
 `--dangerously-skip-permissions` 都是 `bypass_permissions` 的别名，未经用户明确要求
 不要使用。旗标值大小写不敏感（`acceptEdits`/`yolo` 实测可解析，非法值报六枚举 `Choices`）。
 
-大批旗标虽不在 `--help` 中但确实存在（用"故意加一个假旗标、看解析器点名谁"的方式
-验过）：`--acp`、`--sandbox`、`--max-turns`、`-q`、`--yolo`、`--fork-session`、
-`-c`、`--settings`、`--output-style`、`--attachment`、`--reasoning-effort`、
-`--context-window`、`--max-output-tokens`、`--strict-mcp-config`、
-`--mcp-config`、`--disallowed-tools`、`--input-format`。
+另有大批旗标不在 `--help` 中却确实存在（如 `--sandbox`、`--reasoning-effort`、`--mcp-config`、
+`--context-window` 等；完整清单与"故意塞假旗标看点名"的取证法见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」。)
 
 ### JSON 信封
 
@@ -141,10 +137,7 @@ headless 下没人能回答确认，所以要用 `--permission-mode` 预授权�
 print('credits',d['total_credits'],'turns',d['num_turns'])"
 ```
 
-字段：`type`、`subtype`、`is_error`、`num_turns`、`result`、`stop_reason`、`error_code`、
-`errors`、`duration_ms`、`duration_api_ms`、`total_cost_usd`、`total_credits`（不是
-`total_cost_credits`）、`usage`、`modelUsage`、`permission_denials`、`session_id`、`uuid`、
-`fast_mode_state`。**`is_error` 的原因只写在 `error_code` + `errors[]` 里**，信封别处不提示。
+解析要点：`result`/`num_turns`/`total_credits`（不是 `total_cost_credits`）/`is_error`/`error_code`/`errors`/`session_id` 等；**`is_error` 的原因只写在 `error_code` + `errors[]` 里**，信封别处不提示。完整字段清单见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」。
 
 两个读数陷阱：CN 的 `usage` token 计数恒为 0，唯一真实计量是 `total_credits`；
 `modelUsage` 的键是**内部计费桶 ID 而非模型显示名**（`gfmodel` 即 GLM-5.3-Flash、
@@ -167,7 +160,7 @@ python "$HOME/.qwenworkcn/skills/qodercn-cli/assets/sdk_bridge.py" \
   --model Qwen3.8-Flash --permission-mode default --log gate.jsonl
 ```
 
-四个文档没写、每个都花掉一轮排查的要点：
+四个文档未记载、易踩坑的要点：
 
 1. **`auth` 必填**，且不会隐式读 `~/.qoder-cn/.auth`，否则
    `AuthNotConfiguredError`。用 `qodercli_auth()`，其 payload 为
@@ -262,11 +255,10 @@ cd "$A" && nohup python ask_relay.py --cwd "$P" --prompt "<任务>"      --outbo
 - **盘符绝对路径形式的规则静默不匹配**。`Read(C:/Users/.../secret.txt)` 直接泄露，
   而相对形式拦住。**不要用 `C:\` 或 `C:/` 前缀写 deny 规则**，用相对形式并按结果复核。
   （只测了正斜杠形式。）
-- **`Bash(cmd:*)` 参数级规则确实有效**（此前的否定结论已被推翻）。双臂实测：
-  `permissions.allow: ["Bash(echo:*)"]` + `--permission-mode default` 下，命中规则的
-  `echo` 落盘成功；不命中的 `git commit` 被拒，且 `git rev-list --count` 证明它确实没执行。
-  早先的错误结论源于两个混淆变量：只读 shell 命令有独立自动放行通道，且 `default` 下
-  Bash 一律被拒 —— 两者都让"过滤是否生效"不可观测。
+- **`Bash(cmd:*)` 参数级规则确实有效**。双臂实测：`permissions.allow: ["Bash(echo:*)"]` +
+  `--permission-mode default` 下，命中规则的 `echo` 落盘成功；不命中的 `git commit` 被拒，
+  且 `git rev-list --count` 证明它确实没执行。注意两个会让"过滤是否生效"不可观测的混淆变量：
+  只读 shell 命令有独立自动放行通道，且 `default` 下 Bash 一律被拒。
 - **`--allowed-tools` 单独不构成授权**：`default` 下即便写了它，工作目录内的 Write 仍被拒。
 - **无头写文件的最小配方 = `--permission-mode accept_edits` + `--allowed-tools Write`，二者缺一不可**
   （同任务双臂实测：只给 `accept_edits` 无产物；补上 `--allowed-tools Write` 产物落地）。
@@ -282,16 +274,11 @@ CWD 即受信目录、`--add-dir` 能授予目录外写权限。
 
 ## 模型与计费
 
-模型名**不要猜**，先 `"$QN" --list-models`（1.1.37 实测 13 款，含 DeepSeek-V4/GLM-5.3/Kimi-K2.7-Code；名称大小写
-敏感，与文档 `cli/models.md` 冲突时以实时输出为准）。`-m` 语义：默认与新模型用**显示名**、Custom 用 modelID；问某名字背后是什么会得到策略性拒答。
+模型名**不要猜**，先 `"$QN" --list-models`（名称大小写敏感；与文档 `cli/models.md` 冲突时以实时输出为准）。`-m` 语义：默认与新模型用**显示名**、Custom 用 modelID；问某名字背后是什么会得到策略性拒答。
 
-计费桶 ID ↔ 显示名（逐名实测）：`qfmodel`=Qwen3.8-Flash、`q37fmodel`=Qwen3.7-Flash、`qmodel`=Qwen3.7-Plus、
-`qmodel_38max`=Qwen3.8-Max；`gfmodel`=GLM-5.3-Flash 属**本机推断**（553 页文档站 0 命中 `gfmodel`/`GLM-5.3`，
-文档表止于 GLM-5.2），1.1.37 那 13 款的新桶名需重新取证。**极小单回合 credits**：Flash 0.0468 / Qwen3.7-Flash 0.113 /
-Max 0.563 / Plus 1.13 —— 24 倍差且**与档位顺序不一致**，别按"新版更贵"猜。**但成本随上下文走**：553 页审计这类大上下文
-任务实测 Max 3.58、Flash 0.34 credits/回合。最便宜档 = Qwen3.8-Flash（已钉 `~/.qoder-cn/settings.json` 的 `model.name`）。
+计费桶 ID↔显示名映射、逐名 credits 快照都是**易过期证据**，见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」。正文只留方法论：`modelUsage` 的键是内部计费桶 ID 而非显示名（见「JSON 信封」）；**成本随上下文规模走、与档位顺序不一致，别按"新版更贵"猜价**——价格与可选模型一律以 `--list-models` 和 `total_credits` 现读为准，最便宜档同样现读（曾长期为 Qwen3.8-Flash）。
 
-**`error_code=118`：以前记为"间歇故障"，其实是按模型分布的池耗尽。** 特征是 5-6 秒秒退、`is_error:true` +
+**`error_code=118`：是按模型分布的池耗尽，不是全局故障。** 特征是 5-6 秒秒退、`is_error:true` +
 `num_turns:1` + `total_credits:0` + `modelUsage` 只剩一个全零 `<synthetic>` 桶 + **stderr 为空**；真话只在
 `errors[]` 里：`You've reached your credit usage limit`。`<synthetic>` = 请求根本没到达模型。所以"突然全挂"
 先读 `errors[]` 再换模型，别怀疑安装/认证。两种失败要分开：**未识别** id 会在 stderr 提示
@@ -312,8 +299,7 @@ Max 0.563 / Plus 1.13 —— 24 倍差且**与档位顺序不一致**，别按"�
 但它给的刷新时刻与 API 的 `expiresAt` **不一致**，两侧原文与判据见 EVIDENCE.md 台账。
 
 宿主侧成本（决定总开销的是这个）：一次委派往返的宿主积分开销约为其负载本身的两倍以上，且随上下文增长而放大，
-交互式更会把贵的一侧成倍抬高。做法：一次委派覆盖整个任务；大产出落盘、只回一行摘要 + 路径；`--max-turns` 就是预算（40 回合烧 44.8、
-20 回合烧 34.5，都跑满才断且断在产物不完整处）；审计/批量校验按每项 1-2 回合估，宁拆多次小委派。
+交互式更会把贵的一侧成倍抬高。做法：一次委派覆盖整个任务；大产出落盘、只回一行摘要 + 路径；`--max-turns` 就是预算上限（跑满才断、断在产物不完整处；实测数字见 EVIDENCE.md）；审计/批量校验按每项 1-2 回合估，宁拆多次小委派。
 
 ## 会话与项目作用域
 
@@ -332,8 +318,7 @@ cd "C:/项目路径" && "$QN" -r "<session_id>" -p "继续"
 ## 记忆与子代理（路径已实测）
 
 - `<project>/AGENTS.md` **会被加载**。
-- `~/.qoder-cn/AGENTS.md` **会被加载**（2026-08-29 双臂探针实证：令牌只进文件、提示词不含，
-  实验臂回吐令牌、无文件对照臂 NOTFOUND）——用户级与项目级两级入口均可靠，与官方 memory.md 一致。
+- `~/.qoder-cn/AGENTS.md` **会被加载**（双臂探针实证，设计细节见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」）——用户级与项目级两级入口均可靠，与官方 memory.md 一致。
 - 子代理：用户级 `~/.qoder-cn/agents/<name>.md` **生效**（数量 5→6 并出现 `User:` 分组）；项目级是
   **`<project>/.qoder/agents/`**，而 `.agents/`、`.agents/agents/`、`.qoder-cn/agents/` 全部**未被识别**。
   CLI 子代理存放位置文档整体未记载（553 页 0 命中 `<project>/agents/`），此条纯本机实测；frontmatter 用 `name`/`description`/`tools`。

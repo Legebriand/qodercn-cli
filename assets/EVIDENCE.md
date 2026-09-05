@@ -241,3 +241,15 @@ SKILL.md 结论按下列等级分级，只有 **V** 可当既成事实引用；�
 （官方是 `QODERCN_PERSONAL_ACCESS_TOKEN`），但**云端侧它们确为官方写法**，勿当整体不存在；
 `hooks list` 不存在（`hooks` 仅 `migrate`，实测）；`rollback` 不是文件撤销机制（`/rewind` 才是）。
 **2026-08-29 深夜撤出**：`~/path` 规则写法 —— 官方 permissions.md 明文记载 `~/Documents/**`（home 相对）与 `//`（根绝对），此前"CN 文档不存在"所依据的页面集已过时。
+
+
+---
+
+## 正文下沉项（v0.0.4 降噪：从 SKILL.md 正文移入，均一次性实测证据，用前现查）
+
+- **云端通道本机不可达**（2026-08-30）：`api.qoder.com.cn`/`openapi.qoder.com.cn` 503、`api.qoder.cn` 000、`--remote` 仍 `exit 42`；网关 `https://api.qoder.com.cn/api/v1/cloud`，连通性探针 `GET /agents?limit=1`。
+- **不在 `--help` 却存在的旗标**（"故意塞假旗标看解析器点名谁"验过）：`--acp`、`--sandbox`、`--max-turns`、`-q`、`--yolo`、`--fork-session`、`-c`、`--settings`、`--output-style`、`--attachment`、`--reasoning-effort`、`--context-window`、`--max-output-tokens`、`--strict-mcp-config`、`--mcp-config`、`--disallowed-tools`、`--input-format`。
+- **JSON 信封完整字段**：`type`、`subtype`、`is_error`、`num_turns`、`result`、`stop_reason`、`error_code`、`errors`、`duration_ms`、`duration_api_ms`、`total_cost_usd`、`total_credits`、`usage`、`modelUsage`、`permission_denials`、`session_id`、`uuid`、`fast_mode_state`。
+- **模型与计费快照（1.1.37，会过期）**：`--list-models` 返回 13 款（Auto、Qwen3.8-Max/Flash、Qwen3.7-Max/Plus/Flash、DeepSeek-V4-Pro/Flash、GLM-5.3、GLM-5.3-Flash、GLM-5.2、Kimi-K2.7-Code、MiniMax-M2.7）。计费桶↔显示名：`qfmodel`=Qwen3.8-Flash、`q37fmodel`=Qwen3.7-Flash、`qmodel`=Qwen3.7-Plus、`qmodel_38max`=Qwen3.8-Max、`gfmodel`=GLM-5.3-Flash（本机推断，553 页文档站 0 命中）。极小单回合 credits：Flash 0.0468 / 3.7-Flash 0.113 / Max 0.563 / Plus 1.13（24 倍差、与档位顺序不一致）；大上下文审计：Max 3.58、Flash 0.34 credits/回合。
+- **`--max-turns` 预算实测**：40 回合≈44.8、20 回合≈34.5 credits（跑满才断、断在产物不完整处）。
+- **`~/.qoder-cn/AGENTS.md` 双臂探针设计（2026-08-29）**：探针令牌只写进文件、提示词不含；实验臂回吐令牌、无文件对照臂返回 `NOTFOUND` → 判定"会被加载"。铁律：锚点只进被测载体、绝不进提示词。
