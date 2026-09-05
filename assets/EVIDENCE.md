@@ -257,3 +257,39 @@ SKILL.md 结论按下列等级分级，只有 **V** 可当既成事实引用；�
 - **`--allowed-tools` 是单值**(实测):`'Read,Write'` 会被当成**一个** token 而非两项;要放行多个工具须**重复传** `--allowed-tools Read --allowed-tools Write …`。配合最小写档:`accept_edits` + `--allowed-tools Write` 二者缺一不可。
 - **桌面 GUI 与 API 刷新时刻不一致的判据**:GUI(`C:/Program Files/Qoder/Qoder CN/Qoder CN.exe` 用量页)显示"明早 8 点刷新",而 API 的 `expiresAt` 是旧包 **10:00** 过期——两事件并存:**08:00 发新包、10:00 旧包翻 `available=False`**(有效期≈26h)。17:04 一次 `usage_info` 读数同时列出旧包(used=500/500,available=False)与新包(available=True)得证。
 - **换 cwd 恢复报错原文**:`Invalid session identifier '…'`——会话按 cwd 派生的 project key 存于 `~/.qoder-cn/projects/<mangled-path>`(底层 SQLite),跨目录 `-r/--resume` 找不到该 key 即报此错。
+
+---
+
+
+### 权限系统实测：逐字取证（v0.0.6 自正文下沉，保留过程）
+
+**权限系统实测结论（原文）**
+
+用探针验的是**结果**，不是返回值 —— 因为 `permission_denials` **不记录规则命中**，
+拿它验证规则等于什么都没测。
+
+成立：
+- `<project>/.qoder/settings.json` 确实加载（用 `model.name` 作示踪剂，桶变成
+  `qmodel_38max` 且未传 `-m`）。
+- `permissions.deny` 的**相对路径**形式有效：`Edit(editme.txt)` 拦住了改写
+  （文件保持原内容），`Read(secret.txt)` 拦住了读取。Edit 那条在同时传
+  `--allowed-tools Edit` 时依然拦得住。
+- **`--add-dir` 授予工作目录外的写权限**（三臂 + 对照组）：`acceptEdits` 下 cwd 内控制组落盘（探针
+  有效性得证）；目录外**不给** `--add-dir` → Write 与 Bash 双双被挡、文件不存在；给了 → 落盘成功。
+  三臂的 `permission_denials` **全是 `[]`** —— 硬阻断也不记，别拿它验权限。
+
+不成立 —— 这一组是安全边界，务必按"不可依赖"处理：
+- **盘符绝对路径形式的规则静默不匹配**。`Read(C:/Users/.../secret.txt)` 直接泄露，
+  而相对形式拦住。**不要用 `C:\` 或 `C:/` 前缀写 deny 规则**，用相对形式并按结果复核。
+  （只测了正斜杠形式。）
+- **`Bash(cmd:*)` 参数级规则确实有效**。双臂实测：`permissions.allow: ["Bash(echo:*)"]` +
+  `--permission-mode default` 下，命中规则的 `echo` 落盘成功；不命中的 `git commit` 被拒，
+  且 `git rev-list --count` 证明它确实没执行。注意两个会让"过滤是否生效"不可观测的混淆变量：
+  只读 shell 命令有独立自动放行通道，且 `default` 下 Bash 一律被拒。
+- **`--allowed-tools` 单独不构成授权**：`default` 下即便写了它，工作目录内的 Write 仍被拒。
+- **无头写文件的最小配方 = `--permission-mode accept_edits` + `--allowed-tools Write`，二者缺一不可**
+  （同任务双臂实测：只给 `accept_edits` 无产物；补上 `--allowed-tools Write` 产物落地）。
+- `--settings` 内联 JSON **压不过 `-m`**（同时给出时结算桶仍是 `gfmodel`）。文档称
+  `--settings` 优先级最高，对模型选择不成立。
+- 非法 `--settings` JSON 报的是 `Settings file not found: C:\{broken`；非法枚举值
+  （如 `defaultPermissionMode: "zzz"`）被静默接受。
