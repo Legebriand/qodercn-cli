@@ -123,4 +123,5 @@ async def main():
     return 0
 
 
-sys.exit(asyncio.run(asyncio.wait_for(main(), timeout=120)))
+if __name__ == "__main__":
+    sys.exit(asyncio.run(asyncio.wait_for(main(), timeout=120)))

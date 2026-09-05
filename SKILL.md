@@ -9,7 +9,7 @@ argument-hint: Describe the task and give the project path
 argument-hint-en: Describe the task and give the project path
 argument-hint-zh: 描述任务，并给出项目目录
 user-invocable: true
-version: 0.0.4
+version: 0.0.5
 ---
 
 # Qoder CN CLI 协同（Qoder CLI CN）
@@ -106,7 +106,7 @@ saved login, so unset it or set a valid token
 
 **两者都必须自己清洗环境**，SDK 也不会替你隔离。
 
-**已评估、未采纳的通道（云端 Managed Mode）。** 官方 `cloud-agents` 版块（265 页）已给 Managed Mode 完整路径：网关
+**已评估、未采纳的通道（云端 Managed Mode）。** 官方 `cloud-agents` 版块已给 Managed Mode 完整路径：网关
 `https://api.qoder.com.cn/api/v1/cloud`，纯 curl + SSE，自带连通性探针（`GET /agents?limit=1`），认证走
 `pt-` 前缀 PAT 换 SAT；吸引力在把长任务挪离本机。**但本机仍不可达**（连通性实测记录见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」）→ 只升出处，不升可用性。
 
@@ -174,7 +174,7 @@ python "$HOME/.qwenworkcn/skills/qodercn-cli/assets/sdk_bridge.py" \
    `Control request timeout: initialize` —— 看着像认证或版本问题，两者都不是。
    `QoderAgentOptions.env` 接受 `{变量名: None}`，语义是"从子进程删掉这个变量"；
    `sdk_bridge.py` 已把 shell 黑名单镜像过去。
-3. **内置运行时版本偏旧**，且以 153.7MB 的 `_bundled/qoderclicn.exe` 形式存在。
+3. **内置运行时版本偏旧**，且以体积可观的 `_bundled/qoderclicn.exe` 形式存在。
    **务必用 `cli_path` 钉住自己的安装**。查找顺序：`options.cli_path` →
    `QODERCLI_PATH` → 内置 → PATH。`QODER_SKIP_VERSION_CHECK` 可跳过版本校验。
 4. **SDK 选项标准是 camelCase**（`acceptEdits`、`bypassPermissions`、`dontAsk`，另有 `yolo`）；
@@ -204,7 +204,7 @@ updated_permissions, decision_classification)` 与
   **不能**证明动过文件，必须查产物。
 - **`acceptEdits` 的目录内编辑根本不经回调**：同一 Write 任务落盘成功而回调调用计数为 0。想靠
   `ask_relay.py` 拦编辑，必须用 `default`/`plan` 档，`acceptEdits` 会把它短路掉。
-- **`--allowed-tools <tool>` 是单值**（详见 [EVIDENCE.md](assets/EVIDENCE.md)「源码级已证」）：`'Read,Write'` 是一个
+- **`--allowed-tools <tool>` 是单值**（详见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」）：`'Read,Write'` 是一个
   token 而非两项，多工具需重复传参；且它是**限制不是授权**。
 - **Rewind 无头可用**，配方见 `assets/rewind_files.py`：`query(text, message_uuid=<自定>)` →
   `rewind_files(uuid, dry_run=True)` 预览 → 去 `dry_run` 应用。锚点必须自供（SDK 自动生成的不回传）；
@@ -228,7 +228,10 @@ stdin 是因为宿主每次调用都是新进程、无法跨调用维持 stdin�
 ```bash
 A="$HOME/.qwenworkcn/skills/qodercn-cli/assets"
 T=$(mktemp -d); P=$(cygpath -w "$T")     # 必须用 cygpath；手写 "C:\x" 会得到非法目录
-cd "$A" && nohup python ask_relay.py --cwd "$P" --prompt "<任务>"      --outbox "$T/q.jsonl" --inbox "$T/a.txt" --out "$T/sum.json"      --permission-mode default --on-timeout deny --ask-timeout 200      > "$T/relay.log" 2>&1 < /dev/null & disown
+cd "$A" && nohup python ask_relay.py --cwd "$P" --prompt "<任务>" \
+  --outbox "$T/q.jsonl" --inbox "$T/a.txt" --out "$T/sum.json" \
+  --permission-mode default --on-timeout deny --ask-timeout 200 \
+  > "$T/relay.log" 2>&1 < /dev/null & disown
 
 # 读 $T/q.jsonl 取待决操作 -> AskUserQuestion 问人 -> 把答复追加进 $T/a.txt
 ```
@@ -295,7 +298,7 @@ CWD 即受信目录、`--add-dir` 能授予目录外写权限。
 `userQuota`（计划池）/ `addOnQuota` / `orgResourcePackage` / `totalUsagePercentage` / `isQuotaExceeded` /
 `expiresAt`，外加会话 `session.total_credits`。**陷阱：SDK 归一化只映射那三个桶，把 `dedicatedResourcePackages`
 整个丢掉**，而每日 Qwen 专属积分正住在里面 —— 它会报 `isQuotaExceeded=true / remaining=0` 而专属包里还剩几百。
-脚本因此回读本次 run 日志里的原始 payload 补齐，末尾给一行 `VERDICT`。判"这模型还能不能用"用它，不用 `118` 表象。第三个读数入口是**桌面 GUI**（`C:/Program Files/Qoder/Qoder CN/Qoder CN.exe` 的用量页），与 CLI 同账号同后端、肉眼最快；
+脚本因此回读本次 run 日志里的原始 payload 补齐，末尾给一行 `VERDICT`。判"这模型还能不能用"用它，不用 `118` 表象。第三个读数入口是**桌面版 Qoder CN 的用量页**，与 CLI 同账号同后端、肉眼最快；
 但它给的刷新时刻与 API 的 `expiresAt` **不一致**，两侧原文与判据见 EVIDENCE.md 台账。
 
 宿主侧成本（决定总开销的是这个）：一次委派往返的宿主积分开销约为其负载本身的两倍以上，且随上下文增长而放大，
@@ -321,7 +324,7 @@ cd "C:/项目路径" && "$QN" -r "<session_id>" -p "继续"
 - `~/.qoder-cn/AGENTS.md` **会被加载**（双臂探针实证，设计细节见 [EVIDENCE.md](assets/EVIDENCE.md)「正文下沉项」）——用户级与项目级两级入口均可靠，与官方 memory.md 一致。
 - 子代理：用户级 `~/.qoder-cn/agents/<name>.md` **生效**（数量 5→6 并出现 `User:` 分组）；项目级是
   **`<project>/.qoder/agents/`**，而 `.agents/`、`.agents/agents/`、`.qoder-cn/agents/` 全部**未被识别**。
-  CLI 子代理存放位置文档整体未记载（553 页 0 命中 `<project>/agents/`），此条纯本机实测；frontmatter 用 `name`/`description`/`tools`。
+  CLI 子代理存放位置文档整体未记载（全站文档 0 命中 `<project>/agents/`），此条纯本机实测；frontmatter 用 `name`/`description`/`tools`。
 - 内置 5 个子代理：`Explore`、`general-purpose`、`Plan`、`qoder-guide`、
   `statusline-setup`；用 `"$QN" agents list` 查看。
 

@@ -67,7 +67,7 @@ examples:
 
         项目目录：{{项目路径}}
         任务描述：{{要做什么}}
-        模型：{{默认 GLM-5.3-Flash，需要更强可填 Qwen3.8-Max}}
+        模型：{{先列出当前可用模型再选；默认档最省，需要更强填高配}}
 
         遇到写文件之外的敏感操作（删文件、跑构建、访问网络、改动目录外路径）时
         停下来问我，由我答复放行或拒绝；完成后只汇报结果摘要和本次消耗的 credits。
@@ -77,7 +77,7 @@ examples:
 
         Project directory: {{project path}}
         Task: {{what to do}}
-        Model: {{GLM-5.3-Flash by default, Qwen3.8-Max if you need stronger}}
+        Model: {{run --list-models first and pick an available one; default tier is cheapest, a stronger one if needed}}
 
         Pause and ask me before any sensitive operation other than ordinary file writes
         (deleting files, running builds, network access, touching paths outside the

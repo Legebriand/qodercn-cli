@@ -13,7 +13,7 @@
 | 要查的东西 | 页面（前缀 `https://docs.qoder.cn/`） |
 |---|---|
 | 旗标默认值与子命令 / 环境变量全表与路径 / 权限规则 | `cli/cli-reference.md`、`cli/settings-reference.md`、`cli/permissions.md` |
-| MCP（含已确认的 `mcp add <name> -- <cmd>`、`list`、`remove`）/ headless 契约 / ACP | `cli/mcp-reference.md`、`cli/run-in-scripts.md`、`cli/acp.md` |
+| MCP（含已确认的 `mcp add <name> -- <cmd>`、`list`、`remove`）/ headless 契约 / ACP（仅文档索引，非本技能采纳的委派通道） | `cli/mcp-reference.md`、`cli/run-in-scripts.md`、`cli/acp.md` |
 | 模型与推理强度 / 记忆文件位置 / 回退与恢复 | `cli/models.md`、`cli/memory.md`、`cli/how-memory-works.md`、`cli/undo-restore.md` |
 | 安装与升级（`install.sh`/`ps1`/`cmd`、npm `@qodercn-ai/qoderclicn` Node≥20、Windows arm64 不支持；`general.enableAutoUpdate` **默认开**，长委派建议显式关） | `cli/installation.md` |
 | SDK 认证·权限·检查点·错误码·Python 参考 / 内置 Subagent 与 Skills | `cli/sdk/{authentication,permissions,checkpoint,errors,references-python}.md`、`cli/builtins-reference.md` |

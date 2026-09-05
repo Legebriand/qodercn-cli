@@ -314,6 +314,30 @@ def check_no_roster_copy(body, rp):
     )
 
 
+def check_denylist_parity(root, rp):
+    """sdk_bridge.py 的 POLLUTION_* 名单必须逐条出现在 qcn.sh 里（防单边漂移）。"""
+    try:
+        sb = read_text(root / "assets" / "sdk_bridge.py")[0]
+        sh = read_text(root / "assets" / "qcn.sh")[0]
+    except Exception as e:
+        rp.add("DENYLIST_PARITY", False, "cannot read denylist sources: %r" % e)
+        return
+    def _block(src, start, end):
+        i = src.find(start)
+        if i < 0:
+            return ""
+        i += len(start)
+        j = src.find(end, i)
+        return src[i:j if j > 0 else len(src)]
+    fam = re.findall(r'"([A-Z0-9_]+)"', _block(sb, "POLLUTION_FAMILIES = (", ")"))
+    exact = re.findall(r'"([A-Z0-9_]+)"', _block(sb, "POLLUTION_EXACT = {", "}"))
+    if not fam or not exact:
+        rp.add("DENYLIST_PARITY", False, "could not parse POLLUTION_* from sdk_bridge.py")
+        return
+    missing = [n for n in fam + exact if n not in sh]
+    detail = "%d families + %d exact names, all present in qcn.sh" % (len(fam), len(exact))
+    rp.add("DENYLIST_PARITY", not missing, detail if not missing else "in sdk_bridge but not qcn.sh: " + ", ".join(missing))
+
 def main():
     root = Path(__file__).resolve().parent.parent
     skill_path = root / "SKILL.md"
@@ -348,6 +372,7 @@ def main():
         lambda: check_bash_syntax(root, rp),
         lambda: check_python_compile(root, rp),
         lambda: check_no_roster_copy(body, rp),
+        lambda: check_denylist_parity(root, rp),
     ]
     for index, run in enumerate(checks, 1):
         try:

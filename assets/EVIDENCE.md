@@ -105,7 +105,7 @@ CN 文档里出现的规则形式是 `Bash(npm run test:*)`、`Bash(npm publish:
      —— 这些一律**改写成结论转述**，不保留原文；**禁令示例本身也不许引用真实片段**。
   3. **C 第一次确认**：把 B 的命中清单 + 一句话变更摘要交给用户，**得到明确同意之前不得公开**。
   4. **D 推送（需再次点头）**：clone 放在**技能目录之外**（如工作区），流程是"技能目录 → 复制脱敏内容
-     → clone → commit → push"。技能根目录因此不出现 `.git`，保持只有 `SKILL.md`、`.skill-metadata.yaml`、
+     → clone → commit → push"。技能**分发包**因此不含 `.git`（注意区分：开发用**源仓本身带 `.git`**，与安装/分发出去的三样是两回事），保持只有 `SKILL.md`、`.skill-metadata.yaml`、
      `assets/` 三样。
   5. **E 回核**：推完把 commit 与远端地址回给用户核对。
   确认点是两个、彼此独立：**"可以公开"与"可以推送"不是一次授权**。
@@ -253,3 +253,7 @@ SKILL.md 结论按下列等级分级，只有 **V** 可当既成事实引用；�
 - **模型与计费快照（1.1.37，会过期）**：`--list-models` 返回 13 款（Auto、Qwen3.8-Max/Flash、Qwen3.7-Max/Plus/Flash、DeepSeek-V4-Pro/Flash、GLM-5.3、GLM-5.3-Flash、GLM-5.2、Kimi-K2.7-Code、MiniMax-M2.7）。计费桶↔显示名：`qfmodel`=Qwen3.8-Flash、`q37fmodel`=Qwen3.7-Flash、`qmodel`=Qwen3.7-Plus、`qmodel_38max`=Qwen3.8-Max、`gfmodel`=GLM-5.3-Flash（本机推断，553 页文档站 0 命中）。极小单回合 credits：Flash 0.0468 / 3.7-Flash 0.113 / Max 0.563 / Plus 1.13（24 倍差、与档位顺序不一致）；大上下文审计：Max 3.58、Flash 0.34 credits/回合。
 - **`--max-turns` 预算实测**：40 回合≈44.8、20 回合≈34.5 credits（跑满才断、断在产物不完整处）。
 - **`~/.qoder-cn/AGENTS.md` 双臂探针设计（2026-08-29）**：探针令牌只写进文件、提示词不含；实验臂回吐令牌、无文件对照臂返回 `NOTFOUND` → 判定"会被加载"。铁律：锚点只进被测载体、绝不进提示词。
+
+- **`--allowed-tools` 是单值**(实测):`'Read,Write'` 会被当成**一个** token 而非两项;要放行多个工具须**重复传** `--allowed-tools Read --allowed-tools Write …`。配合最小写档:`accept_edits` + `--allowed-tools Write` 二者缺一不可。
+- **桌面 GUI 与 API 刷新时刻不一致的判据**:GUI(`C:/Program Files/Qoder/Qoder CN/Qoder CN.exe` 用量页)显示"明早 8 点刷新",而 API 的 `expiresAt` 是旧包 **10:00** 过期——两事件并存:**08:00 发新包、10:00 旧包翻 `available=False`**(有效期≈26h)。17:04 一次 `usage_info` 读数同时列出旧包(used=500/500,available=False)与新包(available=True)得证。
+- **换 cwd 恢复报错原文**:`Invalid session identifier '…'`——会话按 cwd 派生的 project key 存于 `~/.qoder-cn/projects/<mangled-path>`(底层 SQLite),跨目录 `-r/--resume` 找不到该 key 即报此错。
